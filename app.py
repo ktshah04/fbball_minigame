@@ -128,15 +128,20 @@ def home():
     player_names = []
     play_in_points = []
 
+    teams = {}
+
     # Read the CSV file containing player names
     with open('2023_minigame.csv') as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
            if "*" in row[0]:
                owner_names.append(row[0])
+               owner_name = row[0]
+               teams[owner_name] = []
            else:
                player_names.append(row[0])
                play_in_points.append(row[1])
+               teams[owner_name].append(row[0])
         # owner_names = [row[0] for row in reader if "*" in row[0]]
         # player_names = [row[0] for row in reader if "*" not in row[0]]
         # play_in_points = [row[1] for row in reader]
@@ -144,6 +149,7 @@ def home():
         print(owner_names)
         print(len(player_names))
         print(play_in_points)
+        print(teams)
 
     # get_all_player_stats()
     # print("################################################################################")
@@ -161,15 +167,31 @@ def home():
         # print(game)
         # print(game.keys())
         player_name = game["player"]["first_name"]+" "+game["player"]["last_name"]
-        print(player_name)
+
         if player_name in player_cumulative_points:
             player_cumulative_points[player_name] += game["pts"]
 
     # Create a list of dictionaries containing the player name and cumulative points
-    player_stats = [{"name": name, "cumulative_points": player_cumulative_points[name]} for name in player_names]
+    player_stats = [{"name": name, "pts": player_cumulative_points[name]} for name in player_names]
+    print(teams)
+    print(player_stats)
+
+    final_teams = {}
+
+    for t in teams:
+        final_teams[t] = {}
+        team_total = 0
+        for player in teams[t]:
+            final_teams[t][player] = player_cumulative_points[player]
+            team_total += player_cumulative_points[player]
+
+        final_teams[t]['team_total'] = team_total
+
+    print(final_teams)
+
 
     # Render the HTML template with the player stats
-    return render_template('index.html', players=player_stats)
+    return render_template('index.html', players=final_teams)
 
 
 if __name__ == '__main__':
